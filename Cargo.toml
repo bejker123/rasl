@@ -1,0 +1,24 @@
+[package]
+name = "rusty_are_streamers_live"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dotenv="*"
+reqwest="*"
+json="*"
+#reqwest = { version = "0.11", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+tts_rust = "*"
+
+#CARGO_MANIFEST_DIR
+#CARGO_PKG_AUTHORS
+#CARGO_PKG_DESCRIPTION
+#CARGO_PKG_HOMEPAGE
+#CARGO_PKG_NAME
+#CARGO_PKG_REPOSITORY
+#CARGO_PKG_VERSION
+#CARGO_PKG_VERSION_MAJOR
+#CARGO_PKG_VERSION_MINOR
+#CARGO_PKG_VERSION_PATCH
+#CARGO_PKG_VERSION_PRE
