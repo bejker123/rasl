@@ -5,7 +5,7 @@ Rusty Are Streamers Live is a simple rust project made to notify you when you fa
 
 -Add more arguments.
 
--Come up with a better project name.
+-Come up with a better project name?
 
 -Improve code readability.
 

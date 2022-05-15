@@ -9,7 +9,9 @@ reqwest="*"
 json="*"
 #reqwest = { version = "0.11", features = ["json"] }
 tokio = { version = "1", features = ["full"] }
-tts_rust = "*"
+#tts_rust = "*"
+tts = "*"
+chrono = "*"
 
 #CARGO_MANIFEST_DIR
 #CARGO_PKG_AUTHORS

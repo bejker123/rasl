@@ -80,7 +80,7 @@ pub fn get_fav_users(fav_users_file: String) -> Vec<String> {
 }
 
 //used at startup to load credentials from the save directory
-pub fn get_creds(creds_file: String) -> (String, String) {
+pub fn load_creds(creds_file: String) -> (String, String) {
     let mut file = fs::File::open(creds_file).unwrap();
     let mut content = String::new();
     file.read_to_string(&mut content).unwrap();

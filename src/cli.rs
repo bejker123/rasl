@@ -12,17 +12,28 @@ pub fn display_help() {
         padding
     );
     println!(
-        "{} --r-c/restore-credentials try to restore credentials from backup file.",
+        "{} -r-c/--restore-credentials try to restore credentials from backup file.",
+        padding
+    );
+    println!(
+        "{} -t/--time <secs> set update time.",
         padding
     );
     println!("{} -h/--help display help.", padding);
     std::process::exit(1);
 }
 
-pub fn parse_args(creds_file: String) {
+fn invalid_argument_usage(arg : String){
+    println!("Invalid argument usage: {}", arg);
+    display_help();
+}
+
+pub fn parse_args(creds_file: String) ->(i32,String){
     let mut skip_next = 0 as usize;
     let args = std::env::args().collect::<Vec<String>>();
     let sliced_args = &args[1..args.len()];
+    let mut update_time = -1;
+    let mut user = String::new();
     for i in 0..sliced_args.len() {
         let arg = &sliced_args[i];
         if skip_next > 0 {
@@ -30,7 +41,27 @@ pub fn parse_args(creds_file: String) {
             continue;
         }
         match arg.to_lowercase().as_str() {
-            "-r-c" | "restore-credentials" => {
+            "-u"|"--user"=>{
+                skip_next = 1;
+                if sliced_args.len() - i < i + 1 {
+                    invalid_argument_usage(arg.to_string());
+                }
+                user = args[i+2].clone();
+               // println!("{}",user);
+            },
+            "-t"|"--time"=>{
+                skip_next = 1;
+                if sliced_args.len() - i < i + 1 {
+                    invalid_argument_usage(arg.to_string());
+                }
+                match args[i+2].parse::<i32>(){
+                    Ok(o)=>{
+                        println!("Set update time to {} seconds",o);
+                        update_time = o},
+                    _=>{invalid_argument_usage(arg.to_string());}
+                };
+            },
+            "-r-c" | "--restore-credentials" => {
                 if fs::metadata(creds_file.clone() + ".bak").is_ok() {
                     //check if creds backup file exists
                     fs::rename(creds_file.clone(), creds_file.clone() + ".bak1").unwrap();
@@ -44,8 +75,7 @@ pub fn parse_args(creds_file: String) {
             "-c" | "--credentials" => {
                 skip_next = 2;
                 if sliced_args.len() - i < i + 2 {
-                    println!("Invalid argument usage: {}", arg);
-                    display_help();
+                    invalid_argument_usage(arg.to_string());
                 }
                 let client_id = &sliced_args[i + 1];
                 let oauth = &sliced_args[i + 2];
@@ -65,4 +95,5 @@ pub fn parse_args(creds_file: String) {
             } //TODO: add "here ^"
         }
     }
+    (update_time,user)
 }
