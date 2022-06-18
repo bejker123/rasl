@@ -1,5 +1,7 @@
 use std::fs;
 
+use crate::files::Paths;
+
 //this function displays help and quits
 pub fn display_help() {
     let first_line = format!("Usage: {}", std::env::args().collect::<Vec<String>>()[0]);
@@ -28,7 +30,7 @@ fn invalid_argument_usage(arg : String){
     display_help();
 }
 
-pub fn parse_args(creds_file: String) ->(i32,String){
+pub fn parse_args(paths : Paths) ->(i32,String){
     let mut skip_next = 0 as usize;
     let args = std::env::args().collect::<Vec<String>>();
     let sliced_args = &args[1..args.len()];
@@ -62,13 +64,13 @@ pub fn parse_args(creds_file: String) ->(i32,String){
                 };
             },
             "-r-c" | "--restore-credentials" => {
-                if fs::metadata(creds_file.clone() + ".bak").is_ok() {
+                if fs::metadata(paths.creds_file.clone() + ".bak").is_ok() {
                     //check if creds backup file exists
-                    fs::rename(creds_file.clone(), creds_file.clone() + ".bak1").unwrap();
-                    fs::rename(creds_file.clone() + ".bak", creds_file.clone()).unwrap();
-                    fs::rename(creds_file.clone() + ".bak1", creds_file.clone() + ".bak").unwrap();
+                    fs::rename(paths.creds_file.clone(), paths.creds_file.clone() + ".bak1").unwrap();
+                    fs::rename(paths.creds_file.clone() + ".bak", paths.creds_file.clone()).unwrap();
+                    fs::rename(paths.creds_file.clone() + ".bak1", paths.creds_file.clone() + ".bak").unwrap();
                 } else {
-                    fs::copy(creds_file.clone(), creds_file.clone() + ".bak").unwrap();
+                    fs::copy(paths.creds_file.clone(), paths.creds_file.clone() + ".bak").unwrap();
                     println!("\x1b[93mBackup credentials file doesn't exist, creating one!\x1b[0m")
                 }
             }
@@ -79,13 +81,13 @@ pub fn parse_args(creds_file: String) ->(i32,String){
                 }
                 let client_id = &sliced_args[i + 1];
                 let oauth = &sliced_args[i + 2];
-                if !fs::metadata(creds_file.clone()).is_ok() {
+                if !fs::metadata(paths.creds_file.clone()).is_ok() {
                     //check if creds file exists
-                    fs::rename(creds_file.clone(), creds_file.clone() + ".bak").unwrap();
+                    fs::rename(paths.creds_file.clone(), paths.creds_file.clone() + ".bak").unwrap();
                 }
-                match fs::write(creds_file.clone(),format!("{}\r\n{}",client_id,oauth)){
+                match fs::write(paths.creds_file.clone(),format!("{}\r\n{}",client_id,oauth)){
                     Ok(_)=>{},
-                    Err(e)=>println!("\x1b[93mFailed to write to credentials file({})\x1b[0m\n^^^Acctual error:{}",creds_file,e)
+                    Err(e)=>println!("\x1b[93mFailed to write to credentials file({})\x1b[0m\n^^^Acctual error:{}",paths.creds_file,e)
                 }
             }
             "-h" | "--help" => display_help(),
