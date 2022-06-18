@@ -114,11 +114,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     //test_colors();
     
-    let creds = load_creds(paths.clone().creds_file);
+    let mut creds = load_creds(paths.clone().creds_file);
 
-    let mut client_id = creds.client_id.clone();
+    let client_id = creds.client_id.clone();
 
-    let mut oauth = creds.oauth.clone();
+    let oauth = creds.oauth.clone();
     
     
     let mut failed_to_load_creds = false;
@@ -131,11 +131,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         print!("\x1b[93mFailed to get creds from creds file, trying to get it from the backup file...\x1b[0m");
         //(client_id, oauth) = load_creds(creds_file + ".bak");
 
-        let load_creds_ret = load_creds(paths.creds_file.clone() + ".bak");
+        creds = load_creds(paths.creds_file.clone() + ".bak");
 
-        let mut client_id = creds.client_id.clone();
+        //let client_id = creds.client_id.clone();
 
-        let mut oauth = creds.oauth.clone();
+        //let oauth = creds.oauth.clone();
 
     }
     if oauth == "" || client_id == "" {
@@ -201,13 +201,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             for name in names.clone() {
                 if !names_old.contains(&name) {
                     to_print += &(String::from("\x1b[95mnew follow ") + &name + "\n");
-                    tts.speak(String::from("new follow ") + &name.replace("_"," "),false)?;
+                    tts.speak(String::from("new follow ") + &name.replace("_"," "),false).unwrap();
                 }
             }
             for name_old in names_old.clone() {
                 if !names.contains(&name_old) {
                     to_print += &(String::from("\x1b[95mnew unfollow ") + &name_old + "\n");
-                    tts.speak(String::from("new unfollow ") + &name_old.replace("_"," "),false)?;
+                    tts.speak(String::from("new unfollow ") + &name_old.replace("_"," "),false).unwrap();
                 }
             }
         }
@@ -216,13 +216,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             for stream in &streams {
                 if !streams_old.contains(&stream) {
                     to_print += &(String::from("\x1b[95mnew stream ") + &stream.user_login + "\x1b[0m\n");
-                    tts.speak(String::from("new stream ") + &stream.user_login.replace("_"," "),false)?;
+                    tts.speak(String::from("new stream ") + &stream.user_login.replace("_"," "),false).unwrap();
                 }
             }
             for stream_old in &streams_old {
                 if !streams.contains(&stream_old) {
                     to_print += &(String::from("\x1b[95mstream end ") + &stream_old.user_login + "\x1b[0m\n");
-                    tts.speak(String::from("stream end ") + &stream_old.user_login.replace("_"," "),false)?;
+                    tts.speak(String::from("stream end ") + &stream_old.user_login.replace("_"," "),false).unwrap();
                 }
             }
         }
@@ -249,7 +249,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             prompt = if_watching;
                         }
                     if !watching{
-                       tts.speak(String::from("fav user ") + &stream.user_login.replace("_"," ") + " is live",false)?;
+                       tts.speak(String::from("fav user ") + &stream.user_login.replace("_"," ") + " is live",false).unwrap();
                        "\x1b[91m"
                     }
                    else{
@@ -324,15 +324,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut o_time = String::new();
 
             if output_time[0] != 0 {
-                tts.speak(format!("{} has been live for {} years",stream.user_login,output_time[0]),false);
+                tts.speak(format!("{} has been live for {} years",stream.user_login,output_time[0]),false).unwrap();
                 o_time+= &(output_time[0].to_string()+" years");
             }
             if output_time[1] != 0 {
-                tts.speak(format!("{} has been live for {} months",stream.user_login,output_time[1]),false);
+                tts.speak(format!("{} has been live for {} months",stream.user_login,output_time[1]),false).unwrap();
                 o_time+= &(output_time[1].to_string()+" months");
             }
             if output_time[2] != 0 {
-                tts.speak(format!("{} has been live for {} days",stream.user_login,output_time[2]),false);
+                tts.speak(format!("{} has been live for {} days",stream.user_login,output_time[2]),false).unwrap();
                 o_time+= &(output_time[2].to_string()+" days");
             }
             

@@ -282,10 +282,12 @@ pub async fn get_live_streams(ids: Vec<String>, client_id: &str, oauth: &str) ->
 
 //TODO: fix this 
 //referece https://dev.twitch.tv/docs/api/reference#get-followed-streams
+#[allow(dead_code)]
 pub async fn get_live_folows(id: String, client_id: &str, oauth: &str) -> Vec<Stream> {
     let mut out_streams: Vec<Stream> = vec![];
 
     let client = reqwest::Client::new();
+    #[allow(unused_assignments)]
     let mut res = String::new();
 
     let mut pagination = String::new();
@@ -305,6 +307,7 @@ pub async fn get_live_folows(id: String, client_id: &str, oauth: &str) -> Vec<St
         .await;
         println!("{:#?}",resp);
     match resp{
+        #[allow(unused_assignments)]
         Ok(r) => {
             res = r.text().await.unwrap();
             let j = json::from(res);
