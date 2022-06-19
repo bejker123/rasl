@@ -9,7 +9,7 @@ use std::io::Write;
 #[path = "default_config.rs"]
 mod default_config;
 
-#[path ="structs.rs"]
+#[path = "structs.rs"]
 mod structs;
 
 pub use structs::*;
@@ -32,26 +32,29 @@ pub fn ensure_file_exists(path: String) -> bool {
     false
 }
 
-pub fn get_file_paths() -> Paths{
-
+pub fn get_file_paths() -> Paths {
     let mut save_path = String::new();
 
-    if std::env::consts::OS == "windows"{
-        save_path = String::from(std::env::var("LOCALAPPDATA").unwrap() + "/" + env!("CARGO_PKG_NAME"));
-        
+    if std::env::consts::OS == "windows" {
+        save_path =
+            String::from(std::env::var("LOCALAPPDATA").unwrap() + "/" + env!("CARGO_PKG_NAME"));
+    } else {
+        save_path = String::from(
+            std::env::var("HOME").unwrap() + "/." + &std::env::var("CARGO_PKG_NAME").unwrap(),
+        );
     }
-    else{
-        save_path = String::from(std::env::var("HOME").unwrap()+"/." + &std::env::var("CARGO_PKG_NAME").unwrap());
-       
-    }
-   // println!("save path: {}",save_path);
+    // println!("save path: {}",save_path);
     let fav_users_file = save_path.clone() + "/fav_users.txt";
     //let _follows_file = save_path.clone() + "/follows.txt";
     let _events_file = save_path.clone() + "/events.txt";
     let creds_file = save_path.clone() + "/creds";
     //let _config_file = save_path.clone() + "/config.cfg";
 
-    let paths = Paths { save_path ,fav_users_file, creds_file};
+    let paths = Paths {
+        save_path,
+        fav_users_file,
+        creds_file,
+    };
 
     setup_save_dir(paths.clone());
     paths
@@ -72,14 +75,14 @@ pub fn init_credentials() -> Creds {
         Err(e) => panic!("Initing credentials failed: {}", e),
     };
 
-    Creds{client_id, oauth}
+    Creds { client_id, oauth }
 }
 
 //sets up the user svae directory
-pub fn setup_save_dir(paths : Paths) {
+pub fn setup_save_dir(paths: Paths) {
     ensure_dir_exists(paths.save_path.clone());
     ensure_file_exists(paths.creds_file.clone());
-   // ensure_file_exists(creds_file.clone()+".bak");
+    // ensure_file_exists(creds_file.clone()+".bak");
     if ensure_file_exists(paths.fav_users_file.clone()) {
         let mut file = fs::File::create(paths.fav_users_file.clone()).unwrap();
         let mut content = String::new();
@@ -95,7 +98,7 @@ pub fn setup_save_dir(paths : Paths) {
 }
 
 //Reads fav_users_file into a vector of Strings
-pub fn get_fav_users(paths : Paths) -> Vec<String> {
+pub fn get_fav_users(paths: Paths) -> Vec<String> {
     let mut file = fs::File::open(paths.fav_users_file).unwrap();
     let mut content = String::new();
     file.read_to_string(&mut content).unwrap();
@@ -110,7 +113,7 @@ pub fn get_fav_users(paths : Paths) -> Vec<String> {
 }
 
 //used at startup to load credentials from the save directory
-pub fn load_creds(creds_file : String) -> Creds {
+pub fn load_creds(creds_file: String) -> Creds {
     //println!("{}",creds_file);
     ensure_file_exists(creds_file.clone());
     let mut file = fs::File::open(creds_file).unwrap();
@@ -136,5 +139,8 @@ pub fn load_creds(creds_file : String) -> Creds {
         );
         println!("^^^^ Try using --credentials argument to fix the problem above.");
     }
-    Creds { client_id: creds[0].clone(), oauth: creds[1].clone() }
+    Creds {
+        client_id: creds[0].clone(),
+        oauth: creds[1].clone(),
+    }
 }

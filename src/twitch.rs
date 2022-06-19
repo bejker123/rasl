@@ -33,16 +33,16 @@ impl PartialEq for Stream {
 }
 
 //Function to get id of a twitch user.
-pub async fn get_id(user: &str, creds : Creds) -> Result<u32, u32> {
+pub async fn get_id(user: &str, creds: Creds) -> Result<u32, u32> {
     let client = reqwest::Client::new();
     let mut _is_allive = true;
-   // let mut retries: u32 = 0;
+    // let mut retries: u32 = 0;
     let mut text = String::from("get_id() failed to connect");
     let url = String::from("https://api.twitch.tv/helix/users?login=") + user;
     while _is_allive {
-       // if retries >= 5 {
-     //       break;
-      //  }
+        // if retries >= 5 {
+        //       break;
+        //  }
         let res = match client
             .get(url.clone())
             .header(
@@ -63,15 +63,18 @@ pub async fn get_id(user: &str, creds : Creds) -> Result<u32, u32> {
             }
         };
         text = res.text().await.unwrap();
-      //  println!("{}",text);
+        //  println!("{}",text);
         let j = json::parse(&text).unwrap();
         // println!("{}",res.text().await.unwrap());
         return match j["data"][0]["id"].to_string().parse::<u32>() {
             Ok(o) => Ok(o),
-            _ => {println!("get_id(url={}): Error: {}",url,text);Err(0)},
+            _ => {
+                println!("get_id(url={}): Error: {}", url, text);
+                Err(0)
+            }
         };
     }
-    println!("get_id(url={}): Error: {}",url,text);
+    println!("get_id(url={}): Error: {}", url, text);
     Err(0)
 }
 
@@ -115,7 +118,11 @@ pub async fn get_follows(id: String, client_id: &str, oauth: &str) -> (Vec<Strin
     (ids, names)
 }
 
-async fn get_lives_from_ids(ids : Vec<String>,client_id: &str, oauth: &str)->Result<Vec<Stream>,String>{
+async fn get_lives_from_ids(
+    ids: Vec<String>,
+    client_id: &str,
+    oauth: &str,
+) -> Result<Vec<Stream>, String> {
     let mut out_streams: Vec<Stream> = vec![];
     let mut ids_string = String::new();
     //format
@@ -126,7 +133,6 @@ async fn get_lives_from_ids(ids : Vec<String>,client_id: &str, oauth: &str)->Res
     let client = reqwest::Client::new();
     #[allow(unused_assignments)]
     let mut res = String::new();
-
 
     match client
         .get(format!(
@@ -143,12 +149,14 @@ async fn get_lives_from_ids(ids : Vec<String>,client_id: &str, oauth: &str)->Res
     {
         Ok(r) => res = r.text().await.unwrap(),
         Err(e) => {
-            return Err(String::from("get_lives_from_ids() got an invalid resonce!\nAcctual error: ")+&e.to_string());
-    },
+            return Err(String::from(
+                "get_lives_from_ids() got an invalid resonce!\nAcctual error: ",
+            ) + &e.to_string());
+        }
     };
 
     let j = json::parse(&res).unwrap();
-   // println!("{:?}",j.dump());
+    // println!("{:?}",j.dump());
     let streams = &j["data"];
     for i in 0..streams.len() {
         let stream = &streams[i];
@@ -183,32 +191,38 @@ async fn get_lives_from_ids(ids : Vec<String>,client_id: &str, oauth: &str)->Res
     Ok(out_streams)
 }
 
-fn get_viewer_cathegory(cathegory:&JsonValue)->Vec<String>{
+fn get_viewer_cathegory(cathegory: &JsonValue) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
-    for i in 0..cathegory.len(){
+    for i in 0..cathegory.len() {
         out.push(cathegory[i].to_string().to_owned());
     }
     out
 }
 
-pub async fn get_viewers(user : String)->Vec<String>{
-    let mut out : Vec<String> = Vec::new();
+pub async fn get_viewers(user: String) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
     let client = reqwest::Client::new();
     #[allow(unused_assignments)]
     let mut content = String::new();
 
-    loop{
-        let res = client.get(format!("https://tmi.twitch.tv/group/user/{}/chatters",user)).send().await;
+    loop {
+        let res = client
+            .get(format!(
+                "https://tmi.twitch.tv/group/user/{}/chatters",
+                user
+            ))
+            .send()
+            .await;
 
-        match res{
-            Ok(o)=>{
+        match res {
+            Ok(o) => {
                 let status = o.status();
                 content = o.text().await.unwrap();
-                if status == 200{
-                   // println!("{}",content);
+                if status == 200 {
+                    // println!("{}",content);
                     let j = json::parse(&content).unwrap();
                     let chatters = &j["chatters"];
-                   // println!("{}",chatters["broadcaster"]);
+                    // println!("{}",chatters["broadcaster"]);
                     let _broadcaster = &chatters["broadcaster"];
                     let vips = &chatters["vips"];
                     let moderators = &chatters["moderators"];
@@ -223,14 +237,16 @@ pub async fn get_viewers(user : String)->Vec<String>{
                     out.append(&mut get_viewer_cathegory(admins));
                     out.append(&mut get_viewer_cathegory(global_mods));
                     out.append(&mut get_viewer_cathegory(viewers));
+                } else {
+                    println!(
+                        "get_viewers() got an error, code: {}, error:{}",
+                        status, content
+                    )
                 }
-                else{
-                    println!("get_viewers() got an error, code: {}, error:{}",status,content)
-                }
-                break},
-            Err(_)=>{}
+                break;
+            }
+            Err(_) => {}
         }
-
     }
     //https://tmi.twitch.tv/group/user/{}/chatters
 
@@ -260,16 +276,16 @@ pub async fn get_live_streams(ids: Vec<String>, client_id: &str, oauth: &str) ->
 
     for ids_ in ids_split {
         loop {
-        let x = get_lives_from_ids(ids_.clone(),client_id,oauth).await;
-        match x{
-            Ok(mut o)=>{
-                out_streams.append(&mut o);
-                break
-            },
-            Err(e)=>{
-                println!("get_lives_from_ids() error: {}\nRetrying...",e);
-                std::thread::sleep(std::time::Duration::from_secs(1));
-            }
+            let x = get_lives_from_ids(ids_.clone(), client_id, oauth).await;
+            match x {
+                Ok(mut o) => {
+                    out_streams.append(&mut o);
+                    break;
+                }
+                Err(e) => {
+                    println!("get_lives_from_ids() error: {}\nRetrying...", e);
+                    std::thread::sleep(std::time::Duration::from_secs(1));
+                }
             }
         }
     }
@@ -280,7 +296,7 @@ pub async fn get_live_streams(ids: Vec<String>, client_id: &str, oauth: &str) ->
     out_streams
 }
 
-//TODO: fix this 
+//TODO: fix this
 //referece https://dev.twitch.tv/docs/api/reference#get-followed-streams
 #[allow(dead_code)]
 pub async fn get_live_folows(id: String, client_id: &str, oauth: &str) -> Vec<Stream> {
@@ -294,34 +310,34 @@ pub async fn get_live_folows(id: String, client_id: &str, oauth: &str) -> Vec<St
 
     loop {
         let resp = client
-        .get(format!(
-            "https://api.twitch.tv/helix/streams/followed?first=100&user_id={}{}",
-            id,pagination
-        ))
-        .header(
-            reqwest::header::AUTHORIZATION,
-            String::from("Bearer ") + oauth,
-        )
-        .header("Client-ID", client_id)
-        .send()
-        .await;
-        println!("{:#?}",resp);
-    match resp{
-        #[allow(unused_assignments)]
-        Ok(r) => {
-            res = r.text().await.unwrap();
-            let j = json::from(res);
-            if j.contains("pagination"){
-                pagination = "&pagination=".to_owned()+&j["pagination"].dump();
-            }
+            .get(format!(
+                "https://api.twitch.tv/helix/streams/followed?first=100&user_id={}{}",
+                id, pagination
+            ))
+            .header(
+                reqwest::header::AUTHORIZATION,
+                String::from("Bearer ") + oauth,
+            )
+            .header("Client-ID", client_id)
+            .send()
+            .await;
+        println!("{:#?}", resp);
+        match resp {
+            #[allow(unused_assignments)]
+            Ok(r) => {
+                res = r.text().await.unwrap();
+                let j = json::from(res);
+                if j.contains("pagination") {
+                    pagination = "&pagination=".to_owned() + &j["pagination"].dump();
+                }
 
-            break;
-        },
-        Err(e) => {
-            println!("get_live_folows() got an error:{}\n retrying...",e)
-    },
+                break;
+            }
+            Err(e) => {
+                println!("get_live_folows() got an error:{}\n retrying...", e)
+            }
+        }
     }
-}
     //sorting according to view count
     out_streams.sort_by_key(|s| s.viewer_count);
     //reversing bcs

@@ -17,20 +17,17 @@ pub fn display_help() {
         "{} -r-c/--restore-credentials try to restore credentials from backup file.",
         padding
     );
-    println!(
-        "{} -t/--time <secs> set update time.",
-        padding
-    );
+    println!("{} -t/--time <secs> set update time.", padding);
     println!("{} -h/--help display help.", padding);
     std::process::exit(1);
 }
 
-fn invalid_argument_usage(arg : String){
+fn invalid_argument_usage(arg: String) {
     println!("Invalid argument usage: {}", arg);
     display_help();
 }
 
-pub fn parse_args(paths : Paths) ->(i32,String){
+pub fn parse_args(paths: Paths) -> (i32, String) {
     let mut skip_next = 0 as usize;
     let args = std::env::args().collect::<Vec<String>>();
     let sliced_args = &args[1..args.len()];
@@ -43,32 +40,41 @@ pub fn parse_args(paths : Paths) ->(i32,String){
             continue;
         }
         match arg.to_lowercase().as_str() {
-            "-u"|"--user"=>{
+            "-u" | "--user" => {
                 skip_next = 1;
                 if sliced_args.len() - i < i + 1 {
                     invalid_argument_usage(arg.to_string());
                 }
-                user = args[i+2].clone();
-               // println!("{}",user);
-            },
-            "-t"|"--time"=>{
+                user = args[i + 2].clone();
+                // println!("{}",user);
+            }
+            "-t" | "--time" => {
                 skip_next = 1;
                 if sliced_args.len() - i < i + 1 {
                     invalid_argument_usage(arg.to_string());
                 }
-                match args[i+2].parse::<i32>(){
-                    Ok(o)=>{
-                        println!("Set update time to {} seconds",o);
-                        update_time = o},
-                    _=>{invalid_argument_usage(arg.to_string());}
+                match args[i + 2].parse::<i32>() {
+                    Ok(o) => {
+                        println!("Set update time to {} seconds", o);
+                        update_time = o
+                    }
+                    _ => {
+                        invalid_argument_usage(arg.to_string());
+                    }
                 };
-            },
+            }
             "-r-c" | "--restore-credentials" => {
                 if fs::metadata(paths.creds_file.clone() + ".bak").is_ok() {
                     //check if creds backup file exists
-                    fs::rename(paths.creds_file.clone(), paths.creds_file.clone() + ".bak1").unwrap();
-                    fs::rename(paths.creds_file.clone() + ".bak", paths.creds_file.clone()).unwrap();
-                    fs::rename(paths.creds_file.clone() + ".bak1", paths.creds_file.clone() + ".bak").unwrap();
+                    fs::rename(paths.creds_file.clone(), paths.creds_file.clone() + ".bak1")
+                        .unwrap();
+                    fs::rename(paths.creds_file.clone() + ".bak", paths.creds_file.clone())
+                        .unwrap();
+                    fs::rename(
+                        paths.creds_file.clone() + ".bak1",
+                        paths.creds_file.clone() + ".bak",
+                    )
+                    .unwrap();
                 } else {
                     fs::copy(paths.creds_file.clone(), paths.creds_file.clone() + ".bak").unwrap();
                     println!("\x1b[93mBackup credentials file doesn't exist, creating one!\x1b[0m")
@@ -83,7 +89,8 @@ pub fn parse_args(paths : Paths) ->(i32,String){
                 let oauth = &sliced_args[i + 2];
                 if !fs::metadata(paths.creds_file.clone()).is_ok() {
                     //check if creds file exists
-                    fs::rename(paths.creds_file.clone(), paths.creds_file.clone() + ".bak").unwrap();
+                    fs::rename(paths.creds_file.clone(), paths.creds_file.clone() + ".bak")
+                        .unwrap();
                 }
                 match fs::write(paths.creds_file.clone(),format!("{}\r\n{}",client_id,oauth)){
                     Ok(_)=>{},
@@ -97,5 +104,5 @@ pub fn parse_args(paths : Paths) ->(i32,String){
             } //TODO: add "here ^"
         }
     }
-    (update_time,user)
+    (update_time, user)
 }
