@@ -33,11 +33,16 @@ pub fn ensure_file_exists(path: String) -> bool {
 }
 
 pub fn get_file_paths() -> Paths{
-    let mut save_path = String::from(std::env::var("HOME").unwrap()+"/." + &std::env::var("CARGO_PKG_NAME").unwrap());
-    
+
+    let mut save_path = String::new();
+
     if std::env::consts::OS == "windows"{
-        
         save_path = String::from(std::env::var("LOCALAPPDATA").unwrap() + "/" + env!("CARGO_PKG_NAME"));
+        
+    }
+    else{
+        save_path = String::from(std::env::var("HOME").unwrap()+"/." + &std::env::var("CARGO_PKG_NAME").unwrap());
+       
     }
    // println!("save path: {}",save_path);
     let fav_users_file = save_path.clone() + "/fav_users.txt";
