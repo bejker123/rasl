@@ -1,5 +1,7 @@
 use json::JsonValue;
 
+use crate::files::Creds;
+
 extern crate json;
 extern crate reqwest;
 
@@ -31,22 +33,23 @@ impl PartialEq for Stream {
 }
 
 //Function to get id of a twitch user.
-pub async fn get_id(user: &str, client_id: &str, oauth: &str) -> Result<u32, u32> {
+pub async fn get_id(user: &str, creds : Creds) -> Result<u32, u32> {
     let client = reqwest::Client::new();
     let mut _is_allive = true;
    // let mut retries: u32 = 0;
     let mut text = String::from("get_id() failed to connect");
+    let url = String::from("https://api.twitch.tv/helix/users?login=") + user;
     while _is_allive {
        // if retries >= 5 {
      //       break;
       //  }
         let res = match client
-            .get(String::from("https://api.twitch.tv/helix/users?login=") + user)
+            .get(url.clone())
             .header(
                 reqwest::header::AUTHORIZATION,
-                String::from("Bearer ") + oauth,
+                String::from("Bearer ") + &creds.oauth,
             )
-            .header("Client-ID", client_id)
+            .header("Client-ID", creds.client_id.clone())
             .send()
             .await
         {
@@ -65,10 +68,10 @@ pub async fn get_id(user: &str, client_id: &str, oauth: &str) -> Result<u32, u32
         // println!("{}",res.text().await.unwrap());
         return match j["data"][0]["id"].to_string().parse::<u32>() {
             Ok(o) => Ok(o),
-            _ => {println!("Error: {}",text);Err(0)},
+            _ => {println!("get_id(url={}): Error: {}",url,text);Err(0)},
         };
     }
-    println!("Error: {}",text);
+    println!("get_id(url={}): Error: {}",url,text);
     Err(0)
 }
 
@@ -279,10 +282,12 @@ pub async fn get_live_streams(ids: Vec<String>, client_id: &str, oauth: &str) ->
 
 //TODO: fix this 
 //referece https://dev.twitch.tv/docs/api/reference#get-followed-streams
+#[allow(dead_code)]
 pub async fn get_live_folows(id: String, client_id: &str, oauth: &str) -> Vec<Stream> {
     let mut out_streams: Vec<Stream> = vec![];
 
     let client = reqwest::Client::new();
+    #[allow(unused_assignments)]
     let mut res = String::new();
 
     let mut pagination = String::new();
@@ -302,6 +307,7 @@ pub async fn get_live_folows(id: String, client_id: &str, oauth: &str) -> Vec<St
         .await;
         println!("{:#?}",resp);
     match resp{
+        #[allow(unused_assignments)]
         Ok(r) => {
             res = r.text().await.unwrap();
             let j = json::from(res);

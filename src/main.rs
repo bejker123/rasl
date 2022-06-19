@@ -13,7 +13,6 @@ use cli::*;
 
 extern crate chrono;
 use chrono::prelude::*;
-
 #[allow(dead_code)]
 //That's just to
 //safe to delete
@@ -58,27 +57,43 @@ fn test_nr_of_days_in_a_month(){
 
 #[tokio::test]
 async fn test_get_id(){
-    let (client_id, oauth) = load_creds(String::from(env!("LOCALAPPDATA")) + "/" + env!("CARGO_PKG_NAME") + "/creds");
-    assert_eq!(get_id("bejker321",&client_id,&oauth).await.unwrap(),401738141u32);
+    
+    let paths = get_file_paths();
+
+    let creds = load_creds(paths.creds_file);
+    assert_eq!(get_id("bejker321",creds).await.unwrap(),401738141u32);
+}
+
+#[test]
+fn test_fs(){
+    
+}
+
+#[test]
+fn test_tts(){
+    let mut tts = Tts::default().unwrap();
+
+    tts.speak("Hello, world.", true).unwrap();
 }
 
 //TODO: Add more comments.
 //TODO: Refactor and cleanup code.
 //TODO: Write more tests.
 //TODO: Possibly add GUI? And popup windows notifications?
+//TODO: Separate tests to another file if possible.
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let save_path = String::from(env!("LOCALAPPDATA")) + "/" + env!("CARGO_PKG_NAME");
-    let fav_users_file = save_path.clone() + "/fav_users.txt";
-    //let _follows_file = save_path.clone() + "/follows.txt";
-    let _events_file = save_path.clone() + "/events.txt";
-    let creds_file = save_path.clone() + "/creds";
-    //let _config_file = save_path.clone() + "/config.cfg";
+
+    let paths = get_file_paths();
 
     let mut update_time = 10;
 
-    let (x,mut user) = parse_args(creds_file.clone());
+    let parse_args_ret = parse_args(paths.clone());
+
+    let x = parse_args_ret.0;
+
+    let mut user = parse_args_ret.1;
 
     if x != -1{
         update_time = x;
@@ -98,13 +113,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
   //  tts.speak("Hello, world.", false)?;
     
     //test_colors();
-    setup_save_dir(
-        save_path.clone(),
-        fav_users_file.clone(),
-        creds_file.clone(),
-    );
+    
+    let mut creds = load_creds(paths.clone().creds_file);
 
-    let (mut client_id, mut oauth) = load_creds(creds_file.clone());
+    let client_id = creds.client_id.clone();
+
+    let oauth = creds.oauth.clone();
+    
+    
     let mut failed_to_load_creds = false;
 
     if client_id == "" || oauth == "" {
@@ -113,7 +129,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     if failed_to_load_creds {
         print!("\x1b[93mFailed to get creds from creds file, trying to get it from the backup file...\x1b[0m");
-        (client_id, oauth) = load_creds(creds_file + ".bak");
+        //(client_id, oauth) = load_creds(creds_file + ".bak");
+
+        creds = load_creds(paths.creds_file.clone() + ".bak");
+
+        //let client_id = creds.client_id.clone();
+
+        //let oauth = creds.oauth.clone();
+
     }
     if oauth == "" || client_id == "" {
         println!("\x1b[93mFailed\x1b[0m");
@@ -127,7 +150,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("Success\nTry using the -r-c argument.");
     }
 
-    let id = match get_id(user.as_str(), &client_id, &oauth).await {
+    let id = match get_id(user.as_str(), creds.clone()).await {
         Ok(id) => id,
         _ => 0,
     };
@@ -158,11 +181,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     loop {
         //clear command line
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-        let fav_users = get_fav_users(fav_users_file.clone());
+        let fav_users = get_fav_users(paths.clone());
 
         follows = get_follows(id.to_string(), &client_id, &oauth).await;
 
-        (ids, names) = follows.clone();
+        let get_follows_out = follows.clone();
+
+        ids = get_follows_out.0;
+        names = get_follows_out.1;
 
         streams = get_live_streams(ids, &client_id, &oauth).await;
 
@@ -179,13 +205,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             for name in names.clone() {
                 if !names_old.contains(&name) {
                     to_print += &(String::from("\x1b[95mnew follow ") + &name + "\n");
-                    tts.speak(String::from("new follow ") + &name.replace("_"," "),false)?;
+                    tts.speak(String::from("new follow ") + &name.replace("_"," "),false).unwrap();
                 }
             }
             for name_old in names_old.clone() {
                 if !names.contains(&name_old) {
                     to_print += &(String::from("\x1b[95mnew unfollow ") + &name_old + "\n");
-                    tts.speak(String::from("new unfollow ") + &name_old.replace("_"," "),false)?;
+                    tts.speak(String::from("new unfollow ") + &name_old.replace("_"," "),false).unwrap();
                 }
             }
         }
@@ -194,13 +220,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             for stream in &streams {
                 if !streams_old.contains(&stream) {
                     to_print += &(String::from("\x1b[95mnew stream ") + &stream.user_login + "\x1b[0m\n");
-                    tts.speak(String::from("new stream ") + &stream.user_login.replace("_"," "),false)?;
+                    tts.speak(String::from("new stream ") + &stream.user_login.replace("_"," "),false).unwrap();
                 }
             }
             for stream_old in &streams_old {
                 if !streams.contains(&stream_old) {
                     to_print += &(String::from("\x1b[95mstream end ") + &stream_old.user_login + "\x1b[0m\n");
-                    tts.speak(String::from("stream end ") + &stream_old.user_login.replace("_"," "),false)?;
+                    tts.speak(String::from("stream end ") + &stream_old.user_login.replace("_"," "),false).unwrap();
                 }
             }
         }
@@ -237,7 +263,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             prompt = if_watching;
                         }
                     if !watching{
-                       tts.speak(String::from("fav user ") + &stream.user_login.replace("_"," ") + " is live",false)?;
+                       tts.speak(String::from("fav user ") + &stream.user_login.replace("_"," ") + " is live",false).unwrap();
                        "\x1b[91m"
                     }
                    else{
@@ -300,15 +326,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut o_time = String::new();
 
             if output_time[0] != 0 {
-               // tts.speak(format!("{} has been live for {} years",stream.user_login,output_time[0]),false);
+                tts.speak(format!("{} has been live for {} years",stream.user_login,output_time[0]),false);
                 o_time+= &(output_time[0].to_string()+" years ");
             }
             if output_time[1] != 0 {
-                //tts.speak(format!("{} has been live for {} months",stream.user_login,output_time[1]),false);
+                tts.speak(format!("{} has been live for {} months",stream.user_login,output_time[1]),false);
                 o_time+= &(output_time[1].to_string()+" months ");
             }
             if output_time[2] != 0 {
-                //tts.speak(format!("{} has been live for {} days",stream.user_login,output_time[2]),false);
+                tts.speak(format!("{} has been live for {} days",stream.user_login,output_time[2]),false);
                 o_time+= &(output_time[2].to_string()+" days ");
             }
             
