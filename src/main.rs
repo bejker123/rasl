@@ -151,6 +151,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut first_iter = true;
 
+    let str_vec_to_i128_vec = |x : &str,split_patern : &str| {
+        x.split(split_patern).map(|o|{o.parse::<i128>().unwrap()}).collect::<Vec<i128>>()
+    };
+
     loop {
         //clear command line
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
@@ -201,6 +205,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
 
+        let utc = Utc::now().to_string();
+
+        let utc = utc.split(".");
+        
+        let utc = utc.collect::<Vec<&str>>()[0].split(" ").collect::<Vec<&str>>();
+        
+        let bigger_time_now = str_vec_to_i128_vec(utc[0],"-");
+        
+        let lesser_time_now = str_vec_to_i128_vec(utc[1],":");
+
         for stream in &streams {
             //if set to true: checking if you are watching all of currentli live followed streamer, othewrise only live fav users
             let check_all = false;
@@ -236,18 +250,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let time = stream.started_at.replace("T"," ");
             let time = time.replace("Z","");
             let time = time.split(" ").collect::<Vec<&str>>();
-
-            let str_vec_to_i128_vec = |x : &str,split_patern : &str| {
-                x.split(split_patern).map(|o|{o.parse::<i128>().unwrap()}).collect::<Vec<i128>>()
-            };
-
-            let utc = Utc::now().to_string();
-            let utc = utc.split(".");
-            let utc = utc.collect::<Vec<&str>>()[0].split(" ").collect::<Vec<&str>>();
-
-            let bigger_time_now = str_vec_to_i128_vec(utc[0],"-");
-
-            let lesser_time_now = str_vec_to_i128_vec(utc[1],":");
 
             let bigger_time = str_vec_to_i128_vec(time[0],"-");
 
@@ -298,16 +300,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut o_time = String::new();
 
             if output_time[0] != 0 {
-                tts.speak(format!("{} has been live for {} years",stream.user_login,output_time[0]),false);
-                o_time+= &(output_time[0].to_string()+" years");
+               // tts.speak(format!("{} has been live for {} years",stream.user_login,output_time[0]),false);
+                o_time+= &(output_time[0].to_string()+" years ");
             }
             if output_time[1] != 0 {
-                tts.speak(format!("{} has been live for {} months",stream.user_login,output_time[1]),false);
-                o_time+= &(output_time[1].to_string()+" months");
+                //tts.speak(format!("{} has been live for {} months",stream.user_login,output_time[1]),false);
+                o_time+= &(output_time[1].to_string()+" months ");
             }
             if output_time[2] != 0 {
-                tts.speak(format!("{} has been live for {} days",stream.user_login,output_time[2]),false);
-                o_time+= &(output_time[2].to_string()+" days");
+                //tts.speak(format!("{} has been live for {} days",stream.user_login,output_time[2]),false);
+                o_time+= &(output_time[2].to_string()+" days ");
             }
             
             for i in 3..output_time.len(){
