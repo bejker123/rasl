@@ -332,15 +332,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut o_time = String::new();
 
             if output_time[0] != 0 {
-                tts.speak(format!("{} has been live for {} years",stream.user_login,output_time[0]),false);
+                //tts.speak(format!("{} has been live for {} years",stream.user_login,output_time[0]),false);
                 o_time+= &(output_time[0].to_string()+" years ");
             }
             if output_time[1] != 0 {
-                tts.speak(format!("{} has been live for {} months",stream.user_login,output_time[1]),false);
+                //tts.speak(format!("{} has been live for {} months",stream.user_login,output_time[1]),false);
                 o_time+= &(output_time[1].to_string()+" months ");
             }
             if output_time[2] != 0 {
-                tts.speak(format!("{} has been live for {} days",stream.user_login,output_time[2]),false);
+                //tts.speak(format!("{} has been live for {} days",stream.user_login,output_time[2]),false);
                 o_time+= &(output_time[2].to_string()+" days ");
             }
             
