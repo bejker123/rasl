@@ -21,6 +21,10 @@ pub fn display_help() {
         "{} -t/--time <secs> set update time.",
         padding
     );
+    println!(
+        "{} -u/--user <secs> set user.",
+        padding
+    );
     println!("{} -h/--help display help.", padding);
     std::process::exit(1);
 }
@@ -42,10 +46,11 @@ pub fn parse_args(paths : Paths) ->(i32,String){
             skip_next -= 1;
             continue;
         }
+        let args_len = sliced_args.len()-1;//adding the +1 for the checks
         match arg.to_lowercase().as_str() {
             "-u"|"--user"=>{
                 skip_next = 1;
-                if sliced_args.len() - i < i + 1 {
+                if args_len - i < 1 {//here
                     invalid_argument_usage(arg.to_string());
                 }
                 user = args[i+2].clone();
@@ -53,7 +58,7 @@ pub fn parse_args(paths : Paths) ->(i32,String){
             },
             "-t"|"--time"=>{
                 skip_next = 1;
-                if sliced_args.len() - i < i + 1 {
+                if args_len - i < 1 {
                     invalid_argument_usage(arg.to_string());
                 }
                 match args[i+2].parse::<i32>(){
@@ -76,7 +81,7 @@ pub fn parse_args(paths : Paths) ->(i32,String){
             }
             "-c" | "--credentials" => {
                 skip_next = 2;
-                if sliced_args.len() - i < i + 2 {
+                if args_len - i < 2 {
                     invalid_argument_usage(arg.to_string());
                 }
                 let client_id = &sliced_args[i + 1];

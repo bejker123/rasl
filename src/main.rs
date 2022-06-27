@@ -66,7 +66,13 @@ async fn test_get_id(){
 
 #[test]
 fn test_fs(){
-    
+    let paths = get_file_paths();
+
+    let ns = String::new();
+
+    assert_ne!(paths.creds_file,ns);
+    assert_ne!(paths.fav_users_file,ns);
+    assert_ne!(paths.save_path,ns);
 }
 
 #[test]
