@@ -14,9 +14,13 @@ mod structs;
 
 pub use structs::*;
 
+pub fn does_exist(path : String) -> bool{
+    fs::metadata(path.clone()).is_ok()
+}
+
 //returns true if created, false if already existed
 pub fn ensure_dir_exists(dir: String) -> bool {
-    if !fs::metadata(dir.clone()).is_ok() {
+    if !does_exist(dir.clone()) {
         fs::create_dir(dir).unwrap();
         return true;
     }
@@ -25,13 +29,14 @@ pub fn ensure_dir_exists(dir: String) -> bool {
 
 //returns true if created, false if already existed
 pub fn ensure_file_exists(path: String) -> bool {
-    if !fs::metadata(path.clone()).is_ok() {
+    if !does_exist(path.clone()) {
         fs::File::create(path).unwrap();
         return true;
     }
     false
 }
 
+#[allow(unused_assignments)]
 pub fn get_file_paths() -> Paths {
     let mut save_path = String::new();
 

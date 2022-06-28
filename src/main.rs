@@ -1,10 +1,10 @@
 use std::io::Write;
 use std::vec;
 use tts::*;
-//use tts_rust::{languages::Languages, GTTSClient};
 
 mod default_config;
 mod twitch;
+mod tests;
 use twitch::*;
 mod files;
 use files::*;
@@ -14,8 +14,7 @@ use cli::*;
 extern crate chrono;
 use chrono::prelude::*;
 #[allow(dead_code)]
-//That's just to
-//safe to delete
+//Safe to delete
 fn test_colors() {
     for x in 0..256 {
         println!("\x1b[{0}m test {0}\x1b[0", x);
@@ -23,8 +22,8 @@ fn test_colors() {
     loop {}
 }
 
-fn get_nr_of_days_in_month(x: i128, year: i128) -> i128 {
-    match x {
+pub fn get_days_in_month(month: i128, year: i128) -> i128 {
+    match month {
         2 => {
             //check for leap year
             let mut days = 28_i128;
@@ -38,54 +37,10 @@ fn get_nr_of_days_in_month(x: i128, year: i128) -> i128 {
     }
 }
 
-#[test]
-fn test_nr_of_days_in_a_month() {
-    assert_eq!(get_nr_of_days_in_month(1, 2020), 31);
-    assert_eq!(get_nr_of_days_in_month(2, 2020), 29);
-    assert_eq!(get_nr_of_days_in_month(2, 2021), 28);
-    assert_eq!(get_nr_of_days_in_month(3, 2020), 31);
-    assert_eq!(get_nr_of_days_in_month(4, 2020), 30);
-    assert_eq!(get_nr_of_days_in_month(5, 2020), 31);
-    assert_eq!(get_nr_of_days_in_month(6, 2020), 30);
-    assert_eq!(get_nr_of_days_in_month(7, 2020), 31);
-    assert_eq!(get_nr_of_days_in_month(8, 2020), 31);
-    assert_eq!(get_nr_of_days_in_month(9, 2020), 30);
-    assert_eq!(get_nr_of_days_in_month(10, 2020), 31);
-    assert_eq!(get_nr_of_days_in_month(11, 2020), 30);
-    assert_eq!(get_nr_of_days_in_month(12, 2020), 31);
-}
-
-#[tokio::test]
-async fn test_get_id() {
-    let paths = get_file_paths();
-
-    let creds = load_creds(paths.creds_file);
-    assert_eq!(get_id("bejker321", creds).await.unwrap(), 401738141u32);
-}
-
-#[test]
-fn test_fs() {
-    let paths = get_file_paths();
-
-    let ns = String::new();
-
-    assert_ne!(paths.creds_file, ns);
-    assert_ne!(paths.fav_users_file, ns);
-    assert_ne!(paths.save_path, ns);
-}
-
-#[test]
-fn test_tts() {
-    let mut tts = Tts::default().unwrap();
-
-    tts.speak("Hello, world.", true).unwrap();
-}
-
 //TODO: Add more comments.
 //TODO: Refactor and cleanup code.
 //TODO: Write more tests.
 //TODO: Possibly add GUI? And popup windows notifications?
-//TODO: Separate tests to another file if possible.
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -341,7 +296,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             //days
             if output_time[2] < 0 {
                 //get the number of days in each month
-                output_time[2] += get_nr_of_days_in_month(bigger_time_now[1], bigger_time_now[0]);
+                output_time[2] += get_days_in_month(bigger_time_now[1], bigger_time_now[0]);
                 output_time[1] -= 1;
             }
             //months
