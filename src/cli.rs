@@ -18,7 +18,7 @@ pub fn display_help() {
         padding
     );
     println!("{} -t/--time <secs> set update time.", padding);
-    println!("{} -u/--user <secs> set user.", padding);
+    println!("{} -u/--user <user> set user.", padding);
     println!("{} -h/--help display help.", padding);
     std::process::exit(1);
 }
