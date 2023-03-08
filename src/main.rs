@@ -2,7 +2,6 @@ use std::io::Write;
 use std::vec;
 use tts::*;
 
-mod default_config;
 mod twitch;
 mod tests;
 use twitch::*;
@@ -58,7 +57,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         update_time = x;
     }
 
-    if user == "" {
+    if user.is_empty() {
         user = "bejker321".to_string();
     }
 
@@ -81,7 +80,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut failed_to_load_creds = false;
 
-    if client_id == "" || oauth == "" {
+    if client_id.is_empty() || oauth.is_empty()  {
         failed_to_load_creds = true;
     }
 
@@ -95,12 +94,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         //let oauth = creds.oauth.clone();
     }
-    if oauth == "" || client_id == "" {
+    if oauth.is_empty()  || client_id.is_empty() {
         println!("\x1b[93mFailed\x1b[0m");
-        if client_id == "" {
+        if client_id.is_empty()  {
             println!("\x1b[93mWarning: client-id is not set, this will likely couse an error later on!\x1b[0m");
         }
-        if oauth == "" {
+        if oauth.is_empty() {
             println!("\x1b[93mWarning: oauth is not set, this will likely couse an error later on!\x1b[0m");
         }
     } else if failed_to_load_creds {
@@ -164,7 +163,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             for name in names.clone() {
                 if !names_old.contains(&name) {
                     to_print += &(String::from("\x1b[95mnew follow ") + &name + "\n");
-                    tts.speak(String::from("new follow ") + &name.replace("_", " "), false)
+                    tts.speak(String::from("new follow ") + &name.replace('_', " "), false)
                         .unwrap();
                 }
             }
@@ -172,7 +171,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 if !names.contains(&name_old) {
                     to_print += &(String::from("\x1b[95mnew unfollow ") + &name_old + "\n");
                     tts.speak(
-                        String::from("new unfollow ") + &name_old.replace("_", " "),
+                        String::from("new unfollow ") + &name_old.replace('_', " "),
                         false,
                     )
                     .unwrap();
@@ -182,23 +181,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         if streams != streams_old && !first_iter {
             for stream in &streams {
-                if !streams_old.contains(&stream) {
+                if !streams_old.contains(stream) {
                     to_print +=
                         &(String::from("\x1b[95mnew stream ") + &stream.user_login + "\x1b[0m\n");
                     tts.speak(
-                        String::from("new stream ") + &stream.user_login.replace("_", " "),
+                        String::from("new stream ") + &stream.user_login.replace('_', " "),
                         false,
                     )
                     .unwrap();
                 }
             }
             for stream_old in &streams_old {
-                if !streams.contains(&stream_old) {
+                if !streams.contains(stream_old) {
                     to_print += &(String::from("\x1b[95mstream end ")
                         + &stream_old.user_login
                         + "\x1b[0m\n");
                     tts.speak(
-                        String::from("stream end ") + &stream_old.user_login.replace("_", " "),
+                        String::from("stream end ") + &stream_old.user_login.replace('_', " "),
                         false,
                     )
                     .unwrap();
@@ -208,10 +207,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         let utc = Utc::now().to_string();
 
-        let utc = utc.split(".");
+        let utc = utc.split('.');
 
         let utc = utc.collect::<Vec<&str>>()[0]
-            .split(" ")
+            .split(' ')
             .collect::<Vec<&str>>();
 
         let bigger_time_now = str_vec_to_i128_vec(utc[0], "-");
@@ -242,7 +241,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     if !watching {
                         tts.speak(
                             String::from("fav user ")
-                                + &stream.user_login.replace("_", " ")
+                                + &stream.user_login.replace('_', " ")
                                 + " is live",
                             false,
                         )
@@ -255,9 +254,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 _ => prompt,
             };
 
-            let time = stream.started_at.replace("T", " ");
-            let time = time.replace("Z", "");
-            let time = time.split(" ").collect::<Vec<&str>>();
+            let time = stream.started_at.replace('T', " ");
+            let time = time.replace('Z', "");
+            let time = time.split(' ').collect::<Vec<&str>>();
 
             let bigger_time = str_vec_to_i128_vec(time[0], "-");
 

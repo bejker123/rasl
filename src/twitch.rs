@@ -110,7 +110,7 @@ pub async fn get_follows(id: String, client_id: &str, oauth: &str) -> (Vec<Strin
             names.push(follow["to_login"].to_string());
         }
         let cursor_ = &j["pagination"]["cursor"];
-        cursor = cursor_.dump().replace("\"", "");
+        cursor = cursor_.dump().replace('"', "");
         if cursor == "null" {
             break;
         }
@@ -160,10 +160,10 @@ async fn get_lives_from_ids(
     let streams = &j["data"];
     for i in 0..streams.len() {
         let stream = &streams[i];
-        let mut tag_ids = stream["tag_ids"].dump().replace("\"", "");
+        let mut tag_ids = stream["tag_ids"].dump().replace('"', "");
         tag_ids = tag_ids[1..tag_ids.len() - 1].to_string();
         let tag_ids = tag_ids
-            .split(",")
+            .split(',')
             .collect::<Vec<&str>>()
             .iter()
             .map(|&x| x.into())
@@ -182,7 +182,7 @@ async fn get_lives_from_ids(
             started_at: stream["started_at"].to_string(),
             language: stream["language"].to_string(),
             thumbnail_url: stream["thumbnail_url"].to_string(),
-            tag_ids: tag_ids,
+            tag_ids,
             is_mature: stream["is_mature"].as_bool().unwrap(),
         };
         out_streams.push(stream);
@@ -214,38 +214,35 @@ pub async fn get_viewers(user: String) -> Vec<String> {
             .send()
             .await;
 
-        match res {
-            Ok(o) => {
-                let status = o.status();
-                content = o.text().await.unwrap();
-                if status == 200 {
-                    // println!("{}",content);
-                    let j = json::parse(&content).unwrap();
-                    let chatters = &j["chatters"];
-                    // println!("{}",chatters["broadcaster"]);
-                    let _broadcaster = &chatters["broadcaster"];
-                    let vips = &chatters["vips"];
-                    let moderators = &chatters["moderators"];
-                    let staff = &chatters["staff"];
-                    let admins = &chatters["admins"];
-                    let global_mods = &chatters["global_mods"];
-                    let viewers = &chatters["viewers"];
+        if let Ok(o) = res {
+            let status = o.status();
+            content = o.text().await.unwrap();
+            if status == 200 {
+                // println!("{}",content);
+                let j = json::parse(&content).unwrap();
+                let chatters = &j["chatters"];
+                // println!("{}",chatters["broadcaster"]);
+                let _broadcaster = &chatters["broadcaster"];
+                let vips = &chatters["vips"];
+                let moderators = &chatters["moderators"];
+                let staff = &chatters["staff"];
+                let admins = &chatters["admins"];
+                let global_mods = &chatters["global_mods"];
+                let viewers = &chatters["viewers"];
 
-                    out.append(&mut get_viewer_cathegory(vips));
-                    out.append(&mut get_viewer_cathegory(moderators));
-                    out.append(&mut get_viewer_cathegory(staff));
-                    out.append(&mut get_viewer_cathegory(admins));
-                    out.append(&mut get_viewer_cathegory(global_mods));
-                    out.append(&mut get_viewer_cathegory(viewers));
-                } else {
-                    println!(
-                        "get_viewers() got an error, code: {}, error:{}",
-                        status, content
-                    )
-                }
-                break;
+                out.append(&mut get_viewer_cathegory(vips));
+                out.append(&mut get_viewer_cathegory(moderators));
+                out.append(&mut get_viewer_cathegory(staff));
+                out.append(&mut get_viewer_cathegory(admins));
+                out.append(&mut get_viewer_cathegory(global_mods));
+                out.append(&mut get_viewer_cathegory(viewers));
+            } else {
+                println!(
+                    "get_viewers() got an error, code: {}, error:{}",
+                    status, content
+                )
             }
-            Err(_) => {}
+            break;
         }
     }
     //https://tmi.twitch.tv/group/user/{}/chatters
@@ -263,9 +260,9 @@ pub async fn get_live_streams(ids: Vec<String>, client_id: &str, oauth: &str) ->
     let mut out_streams: Vec<Stream> = vec![];
 
     //the acctual splitting process happens here:
-    for i in 0..ids.len() {
+    for id in ids {
         if ids_tmp.len() < max_size {
-            ids_tmp.push(ids[i].clone());
+            ids_tmp.push(id);
         } else {
             ids_split.push(ids_tmp);
             ids_tmp = vec![];

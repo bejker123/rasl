@@ -29,7 +29,7 @@ fn invalid_argument_usage(arg: String) {
 }
 
 pub fn parse_args(paths: Paths) -> (i32, String) {
-    let mut skip_next = 0 as usize;
+    let mut skip_next = 0usize;
     let args = std::env::args().collect::<Vec<String>>();
     let sliced_args = &args[1..args.len()];
     let mut update_time = -1;
@@ -90,7 +90,7 @@ pub fn parse_args(paths: Paths) -> (i32, String) {
                 }
                 let client_id = &sliced_args[i + 1];
                 let oauth = &sliced_args[i + 2];
-                if !fs::metadata(paths.creds_file.clone()).is_ok() {
+                if fs::metadata(paths.creds_file.clone()).is_err(){
                     //check if creds file exists
                     fs::rename(paths.creds_file.clone(), paths.creds_file.clone() + ".bak")
                         .unwrap();

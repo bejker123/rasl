@@ -15,7 +15,7 @@ mod structs;
 pub use structs::*;
 
 pub fn does_exist(path : String) -> bool{
-    fs::metadata(path.clone()).is_ok()
+    fs::metadata(path).is_ok()
 }
 
 //returns true if created, false if already existed
@@ -42,11 +42,9 @@ pub fn get_file_paths() -> Paths {
 
     if std::env::consts::OS == "windows" {
         save_path =
-            String::from(std::env::var("LOCALAPPDATA").unwrap() + "/" + env!("CARGO_PKG_NAME"));
+            std::env::var("LOCALAPPDATA").unwrap() + "/" + env!("CARGO_PKG_NAME");
     } else {
-        save_path = String::from(
-            std::env::var("HOME").unwrap() + "/." + &std::env::var("CARGO_PKG_NAME").unwrap(),
-        );
+        save_path = std::env::var("HOME").unwrap() + "/." + &std::env::var("CARGO_PKG_NAME").unwrap();
     }
     // println!("save path: {}",save_path);
     let fav_users_file = save_path.clone() + "/fav_users.txt";
@@ -89,7 +87,7 @@ pub fn setup_save_dir(paths: Paths) {
     ensure_file_exists(paths.creds_file.clone());
     // ensure_file_exists(creds_file.clone()+".bak");
     if ensure_file_exists(paths.fav_users_file.clone()) {
-        let mut file = fs::File::create(paths.fav_users_file.clone()).unwrap();
+        let mut file = fs::File::create(paths.fav_users_file).unwrap();
         let mut content = String::new();
         let default_fav_users = default_config::default_fav_users();
         for i in 0..default_fav_users.len() {
